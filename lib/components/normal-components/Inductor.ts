@@ -56,5 +56,18 @@ export class Inductor extends NormalComponent<
       display_name: props.displayName,
     } as Omit<SourceSimpleInductor, "source_component_id" | "type">)
     this.source_component_id = source_component.source_component_id
+
+    // An unparseable inductance string (e.g. "not-an-inductance") passes the
+    // props schema as NaN, so report it instead of silently emitting NaN.
+    if (!Number.isFinite(props.inductance)) {
+      db.source_invalid_component_property_error.insert({
+        source_component_id: source_component.source_component_id,
+        property_name: "inductance",
+        property_value: this.props.inductance,
+        expected_format: 'a number of henries or an SI string such as "10uH"',
+        message: `Invalid inductance prop on ${this.getDisplayName()}: "${this.props.inductance}". Expected a number of henries or a string with an SI unit, e.g. "10uH" or "100nH"`,
+        error_type: "source_invalid_component_property_error",
+      })
+    }
   }
 }
