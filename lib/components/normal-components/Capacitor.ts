@@ -170,5 +170,18 @@ export class Capacitor extends NormalComponent<
     } as SourceSimpleCapacitorInput)
 
     this.source_component_id = source_component.source_component_id
+
+    // An unparseable capacitance string (e.g. "not-a-capacitance") passes the
+    // props schema as NaN, so report it instead of silently emitting NaN.
+    if (!Number.isFinite(props.capacitance)) {
+      db.source_invalid_component_property_error.insert({
+        source_component_id: source_component.source_component_id,
+        property_name: "capacitance",
+        property_value: this.props.capacitance,
+        expected_format: 'a number of farads or an SI string such as "10uF"',
+        message: `Invalid capacitance prop on ${this.getDisplayName()}: "${this.props.capacitance}". Expected a number of farads or a string with an SI unit, e.g. "10uF" or "100nF"`,
+        error_type: "source_invalid_component_property_error",
+      })
+    }
   }
 }
